@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>TAs — Math Academy by Mrs Garg</title>
+    <meta name="description" content="Meet the tutoring team at Math Academy by Mrs Garg.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="index.html">Math Academy by Mrs Garg</a>
+        <button id="nav-toggle" class="nav-toggle">☰</button>
+        <nav id="main-nav" class="main-nav">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="tas.html">TAs</a>
+          <a href="all-reviews.html">Reviews</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <h1>Our Team</h1>
+      <p>Meet the expert tutors at Math Academy by Mrs Garg</p>
+      <div id="tas-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.25rem; margin-top:1.5rem"></div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <small>&copy; <span id="year"></span> Math Academy by Mrs Garg</small>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+      (async function(){
+        try {
+          const resp = await fetch('/tas.json?v=' + Date.now());
+          const tas = await resp.json();
+          const grid = document.getElementById('tas-grid');
+          grid.innerHTML = tas.map(ta => `
+            <div class="card reveal" style="padding:1rem;">
+              <div class="avatar" style="width:64px;height:64px;margin-bottom:.5rem">${ta.name.split(' ').map(w=>w[0]).join('')}</div>
+              <h3 style="margin:.2rem 0">${appHelpers.escapeHtml(ta.name)}</h3>
+              <p style="color:var(--muted);font-size:.95rem;margin:.2rem 0">${appHelpers.escapeHtml(ta.title)}</p>
+              <p style="margin:.5rem 0;font-size:.9rem">${appHelpers.escapeHtml(ta.bio)}</p>
+              <p style="margin:.5rem 0"><a class="btn" href="reviews/${ta.id}.html" style="font-size:.85rem;padding:.4rem .6rem">View reviews</a></p>
+            </div>
+          `).join('');
+        } catch(e) { console.error('Failed to load TAs', e); }
+      })();
+    </script>
+  </body>
+</html>

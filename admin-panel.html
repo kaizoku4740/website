@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Panel — Math Academy by Mrs Garg</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  </head>
+  <body>
+    <main class="container" style="max-width:900px;margin-top:2rem">
+      <h1>Admin Panel</h1>
+      <p style="color:var(--muted)">Manage reviews for all TAs (password required)</p>
+
+      <!-- ===== LOGIN SECTION ===== -->
+      <!-- Shown by default - hides after successful login -->
+      <!-- Password: 'password' (change in production!) -->
+      <section id="login-section" style="background:var(--card);padding:1.5rem;border-radius:12px;margin-bottom:1.5rem">
+        <h2>Login</h2>
+        <div style="max-width:400px">
+          <label>Admin Password
+            <input type="password" id="admin-password" style="width:100%;padding:.6rem;border-radius:8px;border:1px solid #e6eef6" />
+          </label>
+          <button id="login-btn" style="background:var(--accent);color:white;padding:.6rem 1rem;border:0;border-radius:8px;margin-top:.75rem;cursor:pointer">Login</button>
+          <!-- Status message area for login feedback -->
+          <div id="login-status" style="color:var(--muted);margin-top:.5rem;font-size:.9rem"></div>
+        </div>
+      </section>
+
+      <!-- ===== DASHBOARD SECTION ===== -->
+      <!-- Hidden until successful login - shows all reviews with management options -->
+      <section id="dashboard-section" style="display:none">
+        <!-- Header with logout and back buttons -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+          <h2 style="margin:0">All Reviews</h2>
+          <div style="display:flex;gap:.5rem">
+            <!-- Button to return to main site -->
+            <a href="index.html" class="btn secondary" style="padding:.4rem .75rem;font-size:.9rem;text-decoration:none">← Back to Site</a>
+            <!-- Logout button - hides dashboard and shows login form -->
+            <button id="logout-btn" style="background:#666;color:white;padding:.4rem .75rem;border:0;border-radius:6px;cursor:pointer;font-size:.9rem">Logout</button>
+          </div>
+        </div>
+
+        <!-- TA Filter Dropdown -->
+        <!-- Filter reviews by specific TA or show all -->
+        <div style="margin-bottom:1.5rem">
+          <label>Filter by TA:
+            <select id="ta-filter" style="padding:.5rem;border-radius:8px;border:1px solid #e6eef6">
+              <option value="">— All TAs —</option>
+              <option value="teacher">Ms. Garg (Teacher)</option>
+              <option value="ta1">TA #1</option>
+              <option value="ta2">TA #2</option>
+              <option value="ta3">TA #3</option>
+              <option value="ta4">TA #4</option>
+              <option value="ta5">TA #5</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Reviews List Container -->
+        <!-- Populated dynamically by JavaScript after login -->
+        <!-- Each review has a delete button that requires admin password -->
+        <div id="reviews-list" style="display:grid;gap:1rem"></div>
+      </section>
+    </main>
+
+    <!-- Load global JavaScript helpers -->
+    <script src="js/main.js"></script>
+    
+    <!-- ===== ADMIN PANEL JAVASCRIPT ===== -->
+    <script>
+      // Admin password - CHANGE THIS before deploying to production!
+      // Must match password in test-api.py and src/index.js
+      const ADMIN_PASSWORD = 'password';
+      const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:9999' : '';
+
+      const loginSection = document.getElementById('login-section');
+      const dashboardSection = document.getElementById('dashboard-section');
+      const loginBtn = document.getElementById('login-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      const passwordInput = document.getElementById('admin-password');
+      const loginStatus = document.getElementById('login-status');
+      const taFilter = document.getElementById('ta-filter');
+      const reviewsList = document.getElementById('reviews-list');
+
+      let isLoggedIn = false;
+      let allReviews = {};
+
+      // ===== LOGIN HANDLER =====
+      loginBtn.addEventListener('click', function() {
+        const pwd = passwordInput.value;
+        if (pwd === ADMIN_PASSWORD) {
+          isLoggedIn = true;
+          loginSection.style.display = 'none';
+          dashboardSection.style.display = 'block';
+          loadAllReviews();
+        } else {
+          loginStatus.textContent = 'Wrong password. Try again.';
+          loginStatus.style.color = '#dc2626';
+        }
+      });
+
+      // ===== LOGOUT HANDLER =====
+      logoutBtn.addEventListener('click', function() {
+        isLoggedIn = false;
+        passwordInput.value = '';
+        loginStatus.textContent = '';
+        loginSection.style.display = 'block';
+        dashboardSection.style.display = 'none';
+      });
+
+      // ===== LOAD ALL REVIEWS =====
+      // Fetch reviews from all TAs
+      async function loadAllReviews() {
+        const tas = ['teacher', 'ta1', 'ta2', 'ta3', 'ta4', 'ta5'];
+        allReviews = {};
+
+        for (const ta of tas) {
+          try {
+            const response = await fetch(`${API_BASE}/api/reviews/${ta}`);
+            if (response.ok) {
+              allReviews[ta] = await response.json();
+            }
+          } catch (e) {
+            console.warn(`Failed to load reviews for ${ta}`, e);
+          }
+        }
+
+        renderReviews();
+      }
+
+      // ===== RENDER REVIEWS =====
+      // Display reviews, filtered by selected TA
+      function renderReviews() {
+        const selectedTa = taFilter.value;
+        const taNames = {
+          'teacher': 'Ms. Garg (Teacher)',
+          'ta1': 'TA #1',
+          'ta2': 'TA #2',
+          'ta3': 'TA #3',
+          'ta4': 'TA #4',
+          'ta5': 'TA #5'
+        };
+
+        let html = '';
+
+        if (selectedTa) {
+          // Show reviews for selected TA only
+          const reviews = allReviews[selectedTa] || [];
+          html += `<h3>${taNames[selectedTa]} (${reviews.length} reviews)</h3>`;
+          
+          if (reviews.length === 0) {
+            html += '<p style="color:var(--muted)">No reviews yet.</p>';
+          } else {
+            reviews.forEach(r => {
+              html += `
+                <div style="background:var(--card);padding:1rem;border-radius:10px;border:1px solid #e6eef6">
+                  <div style="display:flex;justify-content:space-between;align-items:start;gap:.5rem">
+                    <div>
+                      <strong>${appHelpers.escapeHtml(r.name)}</strong>
+                      <div style="color:var(--muted);font-size:.9rem">${appHelpers.formatDate(r.ts)}</div>
+                      <div style="margin:.5rem 0">${'★'.repeat(r.rating)}</div>
+                      <p style="margin:.5rem 0">${appHelpers.escapeHtml(r.text)}</p>
+                    </div>
+                    <button class="delete-review-btn" data-ta="${selectedTa}" data-id="${r.id}" style="background:#dc2626;color:white;border:0;padding:.3rem .5rem;border-radius:6px;font-size:.75rem;cursor:pointer;white-space:nowrap">Delete</button>
+                  </div>
+                </div>
+              `;
+            });
+          }
+        } else {
+          // Show all reviews grouped by TA
+          const tas = ['teacher', 'ta1', 'ta2', 'ta3', 'ta4', 'ta5'];
+          tas.forEach(ta => {
+            const reviews = allReviews[ta] || [];
+            html += `<h3>${taNames[ta]} (${reviews.length} reviews)</h3>`;
+            
+            if (reviews.length === 0) {
+              html += '<p style="color:var(--muted)">No reviews yet.</p>';
+            } else {
+              reviews.forEach(r => {
+                html += `
+                  <div style="background:var(--card);padding:1rem;border-radius:10px;border:1px solid #e6eef6;margin-bottom:.5rem">
+                    <div style="display:flex;justify-content:space-between;align-items:start;gap:.5rem">
+                      <div style="flex:1">
+                        <strong>${appHelpers.escapeHtml(r.name)}</strong>
+                        <div style="color:var(--muted);font-size:.9rem">${appHelpers.formatDate(r.ts)}</div>
+                        <div style="margin:.5rem 0">${'★'.repeat(r.rating)}</div>
+                        <p style="margin:.5rem 0">${appHelpers.escapeHtml(r.text)}</p>
+                      </div>
+                      <button class="delete-review-btn" data-ta="${ta}" data-id="${r.id}" style="background:#dc2626;color:white;border:0;padding:.3rem .5rem;border-radius:6px;font-size:.75rem;cursor:pointer;white-space:nowrap">Delete</button>
+                    </div>
+                  </div>
+                `;
+              });
+            }
+          });
+        }
+
+        reviewsList.innerHTML = html;
+
+        // ===== ATTACH DELETE HANDLERS =====
+        document.querySelectorAll('.delete-review-btn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const ta = this.getAttribute('data-ta');
+            const id = this.getAttribute('data-id');
+            
+            if (confirm('Are you sure you want to delete this review?')) {
+              try {
+                const response = await fetch(`${API_BASE}/api/reviews/${ta}/${id}`, {
+                  method: 'DELETE',
+                  headers: { 'X-Admin-Key': ADMIN_PASSWORD }
+                });
+                
+                if (response.ok) {
+                  // Remove from local copy and re-render
+                  allReviews[ta] = allReviews[ta].filter(r => r.id !== id);
+                  renderReviews();
+                } else {
+                  alert('Failed to delete review.');
+                }
+              } catch (e) {
+                alert('Error deleting review: ' + e.message);
+              }
+            }
+          });
+        });
+      }
+
+      // ===== FILTER CHANGE =====
+      taFilter.addEventListener('change', renderReviews);
+    </script>
+  </body>
+</html>

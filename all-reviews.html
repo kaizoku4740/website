@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>All Reviews — Math Academy by Mrs Garg</title>
+    <meta name="description" content="See all reviews and testimonials from students of Math Academy by Mrs Garg.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="index.html">Math Academy by Mrs Garg</a>
+        <button id="nav-toggle" class="nav-toggle">☰</button>
+        <nav id="main-nav" class="main-nav">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="tas.html">TAs</a>
+          <a href="all-reviews.html">Reviews</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <h1>All Reviews</h1>
+      <p style="color:var(--muted)">See what students are saying about our tutors</p>
+
+      <!-- Filter by TA -->
+      <div style="margin:1.5rem 0">
+        <label style="color:var(--muted);font-size:.95rem">Filter by tutor:
+          <select id="ta-filter" style="padding:.5rem;border-radius:8px;border:1px solid #e6eef6;margin-left:.5rem">
+            <option value="">— All Tutors —</option>
+            <option value="teacher">Ms. Garg (Teacher)</option>
+            <option value="ta1">TA #1</option>
+            <option value="ta2">TA #2</option>
+            <option value="ta3">TA #3</option>
+            <option value="ta4">TA #4</option>
+            <option value="ta5">TA #5</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- Sort dropdown -->
+      <div style="margin-bottom:1.5rem">
+        <label style="color:var(--muted);font-size:.95rem">Sort:
+          <select id="sort-select" style="padding:.5rem;border-radius:8px;border:1px solid #e6eef6;margin-left:.5rem">
+            <option value="newest">Newest First</option>
+            <option value="highest">Highest Rated</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- Summary stats -->
+      <div id="stats" style="margin-bottom:1.5rem;padding:1rem;background:var(--card);border-radius:10px;border:1px solid #e6eef6">
+        <p style="margin:0;color:var(--muted)">Loading reviews...</p>
+      </div>
+
+      <!-- Reviews list -->
+      <div id="reviews-list" style="display:grid;gap:1rem"></div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <small id="admin-trigger" style="cursor: default; user-select: none;">&copy; <span id="year"></span> Math Academy by Mrs Garg</small>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+      // ===== ALL REVIEWS PAGE =====
+      document.addEventListener('DOMContentLoaded', function() {
+        // Local helper functions
+        function escapeHtml(s) { 
+          return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+        function formatDate(ts) { 
+          try { 
+            const d = new Date(ts); 
+            return d.toLocaleString(); 
+          } catch(e) { 
+            return ''; 
+          } 
+        }
+
+        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:9999' : '';
+        const taNames = {
+          'teacher': 'Ms. Garg (Teacher)',
+          'ta1': 'TA #1',
+          'ta2': 'TA #2',
+          'ta3': 'TA #3',
+          'ta4': 'TA #4',
+          'ta5': 'TA #5'
+        };
+
+        const filterEl = document.getElementById('ta-filter');
+        const sortEl = document.getElementById('sort-select');
+        const listEl = document.getElementById('reviews-list');
+        const statsEl = document.getElementById('stats');
+
+        console.log('Elements found:', { filterEl, sortEl, listEl, statsEl });
+
+        if (!filterEl || !sortEl || !listEl || !statsEl) {
+          console.error('Missing required elements!');
+          if (statsEl) statsEl.innerHTML = '<p style="color:#dc2626">Error: Page elements not found</p>';
+          return;
+        }
+
+        let allReviews = {}; // Store all reviews for each TA
+
+        // ===== LOAD ALL REVIEWS =====
+        async function loadAllReviews() {
+          console.log('Loading all reviews...');
+          try {
+            const tas = ['teacher', 'ta1', 'ta2', 'ta3', 'ta4', 'ta5'];
+            allReviews = {};
+
+            for (const ta of tas) {
+              try {
+                console.log(`Fetching reviews for ${ta}...`);
+                const url = `${API_BASE}/api/reviews/${ta}`;
+                console.log(`URL: ${url}`);
+                const response = await fetch(url);
+                console.log(`Response status for ${ta}:`, response.status);
+                if (response.ok) {
+                  const data = await response.json();
+                  allReviews[ta] = data;
+                  console.log(`Loaded ${allReviews[ta].length} reviews for ${ta}:`, data);
+                } else {
+                  console.warn(`Failed to load reviews for ${ta}:`, response.status);
+                  allReviews[ta] = [];
+                }
+              } catch (err) {
+                console.error(`Error loading reviews for ${ta}:`, err);
+                allReviews[ta] = [];
+              }
+            }
+
+            console.log('All reviews loaded:', allReviews);
+            render();
+          } catch (err) {
+            console.error('Failed to load reviews:', err);
+            statsEl.innerHTML = '<p style="color:#dc2626">Failed to load reviews: ' + err.message + '</p>';
+          }
+        }
+
+        // ===== RENDER REVIEWS =====
+        function render() {
+          console.log('Rendering reviews...');
+          const selectedTa = filterEl.value;
+          const sort = sortEl.value;
+
+          // Collect all reviews to display
+          let reviewsToShow = [];
+          if (selectedTa) {
+            // Show only selected TA's reviews
+            const reviews = allReviews[selectedTa] || [];
+            reviewsToShow = reviews.map(r => ({ ...r, taId: selectedTa }));
+          } else {
+            // Show all reviews from all TAs
+            for (const ta in allReviews) {
+              const reviews = allReviews[ta] || [];
+              reviews.forEach(r => {
+                reviewsToShow.push({ ...r, taId: ta });
+              });
+            }
+          }
+
+          console.log('Reviews to show:', reviewsToShow.length);
+
+          // Sort reviews
+          if (sort === 'highest') {
+            reviewsToShow.sort((a, b) => b.rating - a.rating);
+          } else {
+            reviewsToShow.sort((a, b) => b.ts - a.ts);
+          }
+
+          // Update stats
+          const totalCount = reviewsToShow.length;
+          const avgRating = totalCount > 0
+            ? (reviewsToShow.reduce((sum, r) => sum + r.rating, 0) / totalCount).toFixed(1)
+            : 0;
+
+          statsEl.innerHTML = `
+            <p style="margin:0"><strong>${totalCount}</strong> review${totalCount !== 1 ? 's' : ''} 
+            ${totalCount > 0 ? `• <strong>${avgRating}</strong> average rating` : ''}</p>
+          `;
+
+          // Render reviews
+          if (totalCount === 0) {
+            listEl.innerHTML = '<p style="color:var(--muted);text-align:center;padding:2rem">No reviews yet</p>';
+            return;
+          }
+
+          console.log('Rendering HTML for reviews...');
+          listEl.innerHTML = reviewsToShow.map((r, i) => `
+            <div class="card reveal" style="animation-delay:${i * 40}ms;padding:1.25rem">
+              <div style="display:flex;justify-content:space-between;align-items:start;gap:1rem;margin-bottom:.5rem">
+                <div>
+                  <strong>${escapeHtml(r.name)}</strong>
+                  <div style="color:var(--muted);font-size:.9rem">${formatDate(r.ts)}</div>
+                </div>
+                <div style="background:var(--accent);color:white;padding:.25rem .5rem;border-radius:6px;font-size:.85rem;white-space:nowrap">
+                  ${taNames[r.taId] || 'Unknown'}
+                </div>
+              </div>
+              <div style="margin:.5rem 0;font-size:1rem">${'★'.repeat(r.rating)}</div>
+              <p style="margin:0.5rem 0">${escapeHtml(r.text)}</p>
+            </div>
+          `).join('');
+          console.log('Reviews rendered successfully');
+        }
+
+        // ===== EVENT LISTENERS =====
+        filterEl.addEventListener('change', render);
+        sortEl.addEventListener('change', render);
+
+        // ===== INITIAL LOAD =====
+        loadAllReviews();
+      });
+    </script>
+  </body>
+</html>

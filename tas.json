@@ -1,0 +1,51 @@
+[
+  {
+    "id": "teacher",
+    "name": "Ms. Garg",
+    "title": "Teacher",
+    "bio": "Coming soon.",
+    "subjects": ["TBD"],
+    "experience": "TBD",
+    "isTeacher": true
+  },
+  {
+    "id": "ta1",
+    "name": "TA #1",
+    "title": "TBD",
+    "bio": "Coming soon.",
+    "subjects": ["TBD"],
+    "experience": "TBD"
+  },
+  {
+    "id": "ta2",
+    "name": "TA #2",
+    "title": "TBD",
+    "bio": "Coming soon.",
+    "subjects": ["TBD"],
+    "experience": "TBD"
+  },
+  {
+    "id": "ta3",
+    "name": "TA #3",
+    "title": "TBD",
+    "bio": "Coming soon.",
+    "subjects": ["TBD"],
+    "experience": "TBD"
+  },
+  {
+    "id": "ta4",
+    "name": "TA #4",
+    "title": "TBD",
+    "bio": "Coming soon.",
+    "subjects": ["TBD"],
+    "experience": "TBD"
+  },
+  {
+    "id": "ta5",
+    "name": "TA #5",
+    "title": "TBD",
+    "bio": "Coming soon.",
+    "subjects": ["TBD"],
+    "experience": "TBD"
+  }
+]
