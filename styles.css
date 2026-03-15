@@ -1,0 +1,240 @@
+
+/* ===== FONT IMPORT ===== */
+/* Import Inter font from Google Fonts for consistent typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* ===== CSS VARIABLES ===== */
+/* Define global color scheme and design tokens */
+/* Customize these values to change the entire site's color scheme */
+:root{
+  --bg:#f6fbff;           /* Light blue background */
+  --card:#ffffff;         /* White card background */
+  --accent:#0b74de;       /* Primary blue color (buttons, links) */
+  --accent-2:#2c7a7b;     /* Secondary teal color (secondary buttons) */
+  --muted:#61707a;        /* Muted gray for secondary text */
+  --radius:12px;          /* Default border radius for rounded corners */
+  --max-width:1100px;     /* Maximum width for content containers */
+}
+
+/* ===== GLOBAL RESET & BASE STYLES ===== */
+/* Apply box-sizing to all elements for easier layout calculations */
+*{box-sizing:border-box}
+
+/* Base body styles - font, colors, and anti-aliasing */
+body{
+  font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; 
+  margin:0; 
+  background:var(--bg); 
+  color:#071024; 
+  -webkit-font-smoothing:antialiased  /* Smooth font rendering on Mac */
+}
+
+/* Container wrapper for centering content with max-width */
+.container{max-width:var(--max-width); margin:0 auto; padding:1.25rem}
+
+/* ===== HEADER & NAVIGATION ===== */
+/* Sticky header with blur effect that stays at top during scroll */
+.site-header{
+  background:transparent; 
+  position:sticky; 
+  top:0; 
+  backdrop-filter: blur(6px);  /* Blur effect for modern browsers */
+}
+
+/* Header container with flexbox for logo and nav alignment */
+.site-header .container{display:flex; align-items:center; gap:1rem}
+
+/* Site logo/brand text styling */
+.brand{
+  font-weight:700; 
+  text-decoration:none; 
+  color:var(--accent); 
+  font-size:1.1rem
+}
+
+/* Main navigation menu - aligned to right */
+.main-nav{
+  margin-left:auto;     /* Push nav to the right */
+  display:flex; 
+  gap:.5rem; 
+  align-items:center
+}
+
+/* Navigation link styling */
+.main-nav a{
+  color:inherit; 
+  text-decoration:none; 
+  padding:.5rem .75rem; 
+  border-radius:8px; 
+  font-weight:600
+}
+
+/* Hover effect for nav links */
+.main-nav a:hover{background:rgba(11,116,222,0.08)}
+
+/* Mobile hamburger menu toggle button (hidden on desktop) */
+.nav-toggle{display:none; background:none; border:0; font-size:1.35rem}
+
+/* ===== HERO SECTION ===== */
+/* Main hero section at top of homepage */
+.hero{padding:4rem 0}
+
+/* Grid layout for hero content and sidebar card */
+.hero .hero-inner{
+  display:grid; 
+  grid-template-columns:1fr 360px;  /* Main content + sidebar */
+  gap:2rem; 
+  align-items:center
+}
+
+/* Hero heading styles */
+.hero h1{font-size:2rem; margin:.25rem 0; line-height:1.05}
+
+/* Lead paragraph in hero section */
+.hero p.lead{color:var(--muted); margin-top:.5rem}
+
+/* Card in hero section (profile/testimonial) */
+.hero-card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85)); 
+  padding:1.25rem; 
+  border-radius:14px; 
+  box-shadow:0 10px 30px rgba(2,6,23,0.07)
+}
+
+/* ===== FEATURES SECTION ===== */
+/* Three-column grid for feature cards */
+.features{
+  display:grid; 
+  grid-template-columns:repeat(3,1fr);  /* 3 equal columns */
+  gap:1rem; 
+  margin:2rem 0 3rem
+}
+
+/* Individual feature card styling */
+.features article{
+  background:var(--card); 
+  padding:1rem; 
+  border-radius:var(--radius); 
+  box-shadow:0 6px 18px rgba(2,6,23,0.06)
+}
+
+/* ===== FOOTER ===== */
+/* Site footer with padding and muted text color */
+.site-footer{padding:1.25rem 0; color:var(--muted)}
+
+/* ===== BUTTONS ===== */
+/* Primary button style */
+.btn{
+  background:var(--accent); 
+  color:white; 
+  padding:.6rem 1rem; 
+  border-radius:10px; 
+  text-decoration:none; 
+  display:inline-block; 
+  font-weight:600
+}
+
+/* Secondary button variant */
+.btn.secondary{background:var(--accent-2)}
+
+/* ===== FORMS ===== */
+/* Contact form container with max width */
+.contact-form{max-width:640px}
+
+/* Form label styling */
+.contact-form label{display:block; margin-bottom:.75rem}
+
+/* Form input, textarea, and select styling */
+.contact-form input, 
+.contact-form textarea, 
+.contact-form select{
+  width:100%; 
+  padding:.6rem; 
+  border-radius:8px; 
+  border:1px solid #e6eef6
+}
+
+/* Form button container */
+.actions{margin-top:.5rem}
+
+/* Form status message (success/error) */
+.form-status{color:var(--muted); margin-top:.75rem}
+
+/* ===== PROFILE CARDS ===== */
+/* Profile/TA card with avatar and info */
+.profile-card{
+  background:var(--card); 
+  padding:1rem; 
+  border-radius:12px; 
+  display:flex; 
+  gap:1rem; 
+  align-items:center; 
+  box-shadow:0 8px 24px rgba(2,6,23,0.06)
+}
+
+/* Circular avatar with gradient background and initials */
+.avatar{
+  width:84px; 
+  height:84px; 
+  border-radius:999px;  /* Perfect circle */
+  background:linear-gradient(135deg,var(--accent),var(--accent-2)); 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  color:white; 
+  font-weight:700; 
+  font-size:1.4rem
+}
+
+/* ===== REVIEWS ===== */
+/* Star rating display in gold color */
+.rating{color:#f6b042; font-weight:700}
+
+/* Individual review card */
+.card{
+  background:var(--card); 
+  padding:0.75rem; 
+  border-radius:10px; 
+  box-shadow:0 6px 20px rgba(2,6,23,0.04); 
+  margin-bottom:.75rem
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+/* Tablet and mobile styles (screens smaller than 900px) */
+@media (max-width:900px){
+  /* Stack hero content vertically on mobile */
+  .hero .hero-inner{grid-template-columns:1fr}
+  
+  /* Show hamburger menu button on mobile */
+  .nav-toggle{display:block}
+  
+  /* Mobile navigation - dropdown menu */
+  .main-nav{
+    position:absolute; 
+    right:1rem; 
+    top:72px; 
+    background:var(--card); 
+    padding:.5rem; 
+    border-radius:8px; 
+    display:none;  /* Hidden by default */
+    box-shadow:0 8px 30px rgba(2,6,23,0.08)
+  }
+  
+  /* Show nav menu when toggle is clicked (JS adds .show class) */
+  .main-nav.show{display:flex; flex-direction:column}
+  
+  /* Single column layout for features on mobile */
+  .features{grid-template-columns:1fr}
+}
+
+/* ===== ANIMATIONS ===== */
+/* Fade-in-up animation for cards and content reveals */
+/* Used on review cards and dynamic content for smooth appearance */
+.reveal{animation:fadeInUp .45s ease both}
+
+/* Keyframes for fade-in-up effect */
+@keyframes fadeInUp{
+  from{opacity:0; transform:translateY(8px)}  /* Start invisible and slightly below */
+  to{opacity:1; transform:translateY(0)}      /* End fully visible at normal position */
+}
+

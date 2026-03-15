@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Reviews — TA #5</title>
+    <meta name="description" content="Reviews for TA #5.">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="../index.html">Math Academy by Mrs Garg</a>
+        <button id="nav-toggle" class="nav-toggle">☰</button>
+        <nav id="main-nav" class="main-nav">
+          <a href="../index.html">Home</a>
+          <a href="../about.html">About</a>
+          <a href="../tas.html">TAs</a>
+          <a href="../all-reviews.html">Reviews</a>
+          <a href="../contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <h1 id="page-title">Reviews for TA #5</h1>
+      <section>
+        <form id="review-form" class="contact-form">
+          <label>Name<input name="name" required></label>
+          <label>Rating
+            <select name="rating">
+              <option value="5">5 — Excellent</option>
+              <option value="4">4 — Good</option>
+              <option value="3">3 — Okay</option>
+              <option value="2">2 — Fair</option>
+              <option value="1">1 — Poor</option>
+            </select>
+          </label>
+          <label>Review<textarea name="text" rows="4" required></textarea></label>
+          <div class="actions"><button class="btn" type="submit">Submit review</button></div>
+        </form>
+      </section>
+
+      <section style="margin-top:1rem">
+        <div style="display:flex;align-items:center;gap:1rem;justify-content:space-between;flex-wrap:wrap">
+          <div>
+            <h2 style="margin:.2rem 0">All reviews</h2>
+            <div id="average-summary" style="color:var(--muted);font-size:.95rem">No reviews yet</div>
+          </div>
+          <div>
+            <label style="color:var(--muted);font-size:.95rem">Sort: <select id="sort-select"><option value="newest">Newest</option><option value="highest">Highest</option></select></label>
+          </div>
+        </div>
+        <div id="reviews-list"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <small>&copy; <span id="year"></span> Math Academy by Mrs Garg</small>
+      </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+      const taId = 'ta5';
+      const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:9999' : '';
+      const listEl = document.getElementById('reviews-list');
+      const form = document.getElementById('review-form');
+      const avgEl = document.getElementById('average-summary');
+      const pageTitle = document.getElementById('page-title');
+
+      (async function loadTAInfo(){
+        try{
+          const resp = await fetch('../tas.json');
+          const tas = await resp.json();
+          const ta = tas.find(t => t.id === taId);
+          if(ta) pageTitle.textContent = `Reviews for ${ta.name}`;
+        }catch(e){ console.warn('could not load TA info', e) }
+      })();
+
+      function computeSummary(reviews){
+        if(!reviews || reviews.length===0) return {avg:0,count:0}
+        const sum = reviews.reduce((s,r)=>s + (Number(r.rating)||0),0);
+        return { avg: sum / reviews.length, count: reviews.length }
+      }
+
+      async function render(){
+        try {
+          const response = await fetch(`${API_BASE}/api/reviews/${taId}`);
+          if (!response.ok) throw new Error(`API error: ${response.status}`);
+          let reviews = await response.json();
+          
+          const sort = document.getElementById('sort-select')?.value || 'newest';
+          if(sort === 'highest') reviews = reviews.slice().sort((a,b)=>b.rating - a.rating);
+          else reviews = reviews.slice().sort((a,b)=>b.ts - a.ts);
+
+          const summary = computeSummary(reviews);
+          if(summary.count===0){ avgEl.textContent = 'No reviews yet — be the first!'; }
+          else { avgEl.innerHTML = `<strong>${summary.avg.toFixed(1)}</strong> average — ${summary.count} review${summary.count>1?'s':''}` }
+
+          if(reviews.length === 0){ listEl.innerHTML = '<p>No reviews yet — be the first!</p>'; return }
+          listEl.innerHTML = reviews.map((r,i)=>{
+            const name = appHelpers.escapeHtml(r.name);
+            const text = appHelpers.escapeHtml(r.text);
+            const date = appHelpers.formatDate(r.ts);
+            return `<div class="card reveal" style="animation-delay:${i*40}ms"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem"><div style="flex:1"><strong>${name}</strong><br><small style="color:var(--muted)">${date}</small></div></div><div style="margin:.5rem 0">${'★'.repeat(r.rating)}</div><p style="margin:0">${text}</p></div>`
+          }).join('');
+        } catch (err) {
+          console.error('Failed to load reviews:', err);
+          avgEl.textContent = 'Error loading reviews.';
+          listEl.innerHTML = '<p style="color:#dc2626">Failed to load reviews</p>';
+        }
+      }
+
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        try {
+          const data = new FormData(form);
+          const review = { name: data.get('name'), rating: Number(data.get('rating')||5), text: data.get('text') };
+          const response = await fetch(`${API_BASE}/api/reviews/${taId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(review)
+          });
+          if (!response.ok) throw new Error(`API error: ${response.status}`);
+          form.reset();
+          render();
+        } catch (err) {
+          console.error('Failed to submit review:', err);
+          alert('Failed to submit review. Please try again.');
+        }
+      });
+
+      document.getElementById('sort-select')?.addEventListener('change', render);
+      render();
+    </script>
+  </body>
+</html>
