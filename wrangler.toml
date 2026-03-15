@@ -4,5 +4,5 @@ compatibility_date = "2024-01-01"
 
 [[kv_namespaces]]
 binding = "REVIEWS"
-id = "your-kv-namespace-id-here"
-preview_id = "your-preview-kv-namespace-id-here"
+id = "fa6ae6d29690413ebca26d9236ef7afd"
+preview_id = "fa6ae6d29690413ebca26d9236ef7afd"
