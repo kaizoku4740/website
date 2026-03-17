@@ -48,9 +48,7 @@ function normalizeMessage(parsed, rawText) {
     email:   email   || '(none)',
     message: message || '(none)',
     ts: Date.now(),
-    source: 'formsubmit',
-    // Store raw so admin can see the real payload structure
-    _raw: rawText.slice(0, 2000)
+    source: 'formsubmit'
   };
 }
 
