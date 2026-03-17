@@ -65,6 +65,9 @@
         <div style="margin-top:2rem">
           <h2 style="margin:0 0 .5rem 0">Contact Messages</h2>
           <p style="color:var(--muted);margin:.25rem 0 1rem 0">Messages mirrored from the contact form webhook.</p>
+          <div style="margin-bottom:.75rem">
+            <button id="clear-messages-btn" style="background:#dc2626;color:white;padding:.4rem .75rem;border:0;border-radius:6px;cursor:pointer;font-size:.9rem">Clear all messages</button>
+          </div>
           <div id="contact-messages-list" style="display:grid;gap:1rem"></div>
         </div>
       </section>
@@ -239,6 +242,24 @@
 
       // ===== FILTER CHANGE =====
       taFilter.addEventListener('change', renderReviews);
+
+      // ===== CLEAR CONTACT MESSAGES =====
+      document.getElementById('clear-messages-btn').addEventListener('click', async function() {
+        if (!confirm('Delete all contact messages? This cannot be undone.')) return;
+        try {
+          const response = await fetch(`${API_BASE}/api/contact-messages`, {
+            method: 'DELETE',
+            headers: { 'X-Admin-Key': ADMIN_PASSWORD }
+          });
+          if (response.ok) {
+            renderContactMessages([]);
+          } else {
+            alert('Failed to clear messages.');
+          }
+        } catch (e) {
+          alert('Error: ' + e.message);
+        }
+      });
 
       // ===== LOAD CONTACT MESSAGES =====
       async function loadContactMessages() {
