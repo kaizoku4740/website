@@ -64,7 +64,7 @@
 
         <div style="margin-top:2rem">
           <h2 style="margin:0 0 .5rem 0">Contact Messages</h2>
-          <p style="color:var(--muted);margin:.25rem 0 1rem 0">Messages mirrored from the contact form webhook.</p>
+          <p style="color:var(--muted);margin:.25rem 0 1rem 0">Messages also sent to email.</p>
           <div style="margin-bottom:.75rem">
             <button id="clear-messages-btn" style="background:#dc2626;color:white;padding:.4rem .75rem;border:0;border-radius:6px;cursor:pointer;font-size:.9rem">Clear all messages</button>
           </div>
@@ -296,7 +296,6 @@
               <a href="mailto:${appHelpers.escapeHtml(msg.email || '')}" style="font-size:.9rem">${appHelpers.escapeHtml(msg.email || 'No email')}</a>
             </div>
             <p style="margin:.75rem 0 0 0">${appHelpers.escapeHtml(msg.message || '')}</p>
-            ${msg._raw ? `<details style="margin-top:.5rem"><summary style="color:var(--muted);font-size:.8rem;cursor:pointer">debug: raw webhook payload</summary><pre style="font-size:.75rem;overflow-x:auto;background:#f1f5f9;padding:.5rem;border-radius:6px;margin:.25rem 0 0 0">${appHelpers.escapeHtml(msg._raw)}</pre></details>` : ''}
           </div>
         `).join('');
       }
