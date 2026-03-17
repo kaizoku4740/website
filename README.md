@@ -35,10 +35,22 @@ pkill -f "http.server 8888"
 - **Day 2**: 2 hours - March 9th, 5:00 PM to 7:00 PM
   - Admin panel and CSS
 
-- **Day 3**: 2 hours - March 9th, 3:30 PM to 5:30 PM
+- **Day 3**: 2 hours - March 11th, 3:30 PM to 5:30 PM
   - worked on review pages
 
-**Total**: 9 hours
+- **Day 4**: 4 hours - March 12th, 4:00 PM to 8:00 PM
+  - finished review pages
+
+ **Day 5**: 3.5 hours - March 14th, 5:00 PM to 8:30 PM
+  - made review pages store non locally
+
+ **Day 6**: 2.5 hours - March 15th, 11:00 AM to 1:30 PM
+  - debugged the visuals on review pages
+
+- **Day 7**: 5.5 hours - March 15th, 10:00 AM to 1:00 PM and 8:30 PM to 11:00 PM
+  - contact function/page
+
+**Total**: 24.5 hours
 
 ## Notes
 
@@ -47,6 +59,35 @@ pkill -f "http.server 8888"
 - The secret admin access (triple-click footer) works on all pages
 - Admin password should be changed before deployment
 - need to fix timezone for user
+
+## Contact Email Setup (FormSubmit)
+
+The contact form now uses FormSubmit instead of the Cloudflare email function.
+
+- `contact.html` posts directly to FormSubmit
+- `js/main.js` allows the FormSubmit submission to continue normally
+
+To finish setup:
+
+1. Open `contact.html`.
+2. Replace `your-email@example.com` in the form `action` with the real inbox address that should receive messages.
+3. Deploy the site.
+4. Submit the form once.
+5. Check your inbox and confirm the FormSubmit activation email.
+6. Submit the form again to test real delivery.
+
+Notes:
+
+- This does not require a Resend account.
+- The first submission is used to confirm the destination email address.
+- This works on a normal static site and does not require Cloudflare Pages Functions.
+
+### Fast Production Checklist
+
+1. Replace the placeholder email in `contact.html`.
+2. Deploy.
+3. Submit once and confirm the email.
+4. Submit again and verify delivery.
 
 ## Future Enhancements
 
@@ -125,3 +166,5 @@ pkill -f "http.server 8888"
 - **Backend**: Python (local) / JavaScript (production via Cloudflare Workers)
 - **Database**: In-memory (local) / KV storage (production)
 - **API**: RESTful endpoints with CORS support
+
+re_e1HSLaPJ_BsvUUexRAD1VcwoGLBsiHCYc
