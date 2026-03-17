@@ -14,39 +14,38 @@ function corsHeaders() {
 }
 
 async function parseBody(request) {
-  const contentType = request.headers.get('content-type') || '';
-  try {
-    if (contentType.includes('application/json')) {
-      return await request.json();
-    }
-    // FormSubmit webhooks may send application/x-www-form-urlencoded
-    const text = await request.text();
-    // Try JSON first regardless of content-type
-    try { return JSON.parse(text); } catch (_) {}
-    // Fall back to URL-encoded parsing
-    const params = new URLSearchParams(text);
-    const obj = {};
-    for (const [k, v] of params.entries()) obj[k] = v;
-    return obj;
-  } catch (_) {
-    return {};
+  // Read raw text first so we can store it for debugging and try multiple formats
+  let rawText = '';
+  try { rawText = await request.text(); } catch (_) {}
+
+  let parsed = {};
+  // Try JSON parse
+  try { parsed = JSON.parse(rawText); } catch (_) {
+    // Try URL-encoded
+    try {
+      const params = new URLSearchParams(rawText);
+      for (const [k, v] of params.entries()) parsed[k] = v;
+    } catch (_) {}
   }
+  return { parsed, rawText };
 }
 
-function normalizeMessage(payload) {
-  // FormSubmit webhook wraps fields under form_data; also handle flat payloads
-  const fd = payload?.form_data || {};
-  const name    = String(fd.name    || payload?.name    || '').trim();
-  const email   = String(fd.email   || payload?.email   || '').trim();
-  const message = String(fd.message || payload?.message || '').trim();
+function normalizeMessage(parsed, rawText) {
+  // FormSubmit may wrap under form_data, or send flat fields
+  const fd = parsed?.form_data || {};
+  const name    = String(fd.name    || parsed?.name    || '').trim();
+  const email   = String(fd.email   || parsed?.email   || '').trim();
+  const message = String(fd.message || parsed?.message || '').trim();
 
   return {
     id: Date.now().toString(),
-    name:    name    || 'Unknown',
-    email:   email   || 'Unknown',
-    message: message || '(No message body)',
+    name:    name    || '(none)',
+    email:   email   || '(none)',
+    message: message || '(none)',
     ts: Date.now(),
-    source: 'formsubmit'
+    source: 'formsubmit',
+    // Store raw so admin can see the real payload structure
+    _raw: rawText.slice(0, 2000)
   };
 }
 
@@ -67,8 +66,8 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   try {
-    const payload = await parseBody(request);
-    const message = normalizeMessage(payload);
+    const { parsed, rawText } = await parseBody(request);
+    const message = normalizeMessage(parsed, rawText);
 
     const existing = await env.REVIEWS.get(STORAGE_KEY);
     const messages = existing ? JSON.parse(existing) : [];
