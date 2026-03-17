@@ -14,16 +14,55 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   // ===== CONTACT FORM HANDLER =====
-  // Handle contact form submission: prevent default, show a thank you message, clear form
+  // Let FormSubmit forms post normally, and keep the legacy /api/contact flow as fallback.
   const form = document.getElementById('contact-form');
   if(form){
+    const provider = form.dataset.formProvider;
     const status = document.getElementById('form-status');
-    form.addEventListener('submit', function(e){
+
+    if(provider === 'formsubmit'){
+      form.addEventListener('submit', function(){
+        if(status) status.textContent = 'Sending...';
+      });
+      return;
+    }
+
+    form.addEventListener('submit', async function(e){
       e.preventDefault();
       const data = new FormData(form);
-      const name = data.get('name') || 'friend';
-      status.textContent = `Thanks, ${name}! (This demo doesn't send messages.)`;
-      form.reset();
+      const name = String(data.get('name') || '').trim();
+      const email = String(data.get('email') || '').trim();
+      const message = String(data.get('message') || '').trim();
+
+      if(!name || !email || !message){
+        status.textContent = 'Please complete all fields.';
+        return;
+      }
+
+      const btn = form.querySelector('button[type="submit"]');
+      if(btn) btn.disabled = true;
+      status.textContent = 'Sending...';
+
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, message })
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.error || `Request failed (${response.status})`);
+        }
+
+        status.textContent = `Thanks, ${name}! Your message has been sent.`;
+        form.reset();
+      } catch (err) {
+        console.error('Failed to send contact message:', err);
+        status.textContent = 'Failed to send message. Please try again in a minute.';
+      } finally {
+        if(btn) btn.disabled = false;
+      }
     })
   }
 });
