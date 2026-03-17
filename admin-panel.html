@@ -296,6 +296,7 @@
               <a href="mailto:${appHelpers.escapeHtml(msg.email || '')}" style="font-size:.9rem">${appHelpers.escapeHtml(msg.email || 'No email')}</a>
             </div>
             <p style="margin:.75rem 0 0 0">${appHelpers.escapeHtml(msg.message || '')}</p>
+            ${msg._raw ? `<details style="margin-top:.5rem"><summary style="color:var(--muted);font-size:.8rem;cursor:pointer">debug: raw webhook payload</summary><pre style="font-size:.75rem;overflow-x:auto;background:#f1f5f9;padding:.5rem;border-radius:6px;margin:.25rem 0 0 0">${appHelpers.escapeHtml(msg._raw)}</pre></details>` : ''}
           </div>
         `).join('');
       }
