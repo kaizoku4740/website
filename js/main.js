@@ -21,6 +21,11 @@ document.addEventListener('DOMContentLoaded', function(){
     const status = document.getElementById('form-status');
 
     if(provider === 'formsubmit'){
+      const webhookInput = document.getElementById('contact-webhook');
+      if (webhookInput) {
+        webhookInput.value = `${window.location.origin}/api/contact-messages`;
+      }
+
       form.addEventListener('submit', function(){
         if(status) status.textContent = 'Sending...';
       });
