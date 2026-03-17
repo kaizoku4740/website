@@ -23,8 +23,17 @@
 
     <main class="container">
       <h1>Contact</h1>
-      <p>Send us a message — form is local-only (demo). - use javascript to link</p>
-      <form id="contact-form" class="contact-form">
+      <p>Send a message</p>
+      <form
+        id="contact-form"
+        class="contact-form"
+        action="https://formsubmit.co/kaizoku4740@gmail.com"
+        method="POST"
+        data-form-provider="formsubmit"
+      >
+        <input type="hidden" name="_subject" value="New Math Academy contact form message" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_captcha" value="false" />
         <label>
           Name
           <input type="text" name="name" required />
@@ -40,7 +49,7 @@
         <div class="actions">
           <button type="submit" class="btn">Send</button>
         </div>
-        <p id="form-status" class="form-status" aria-live="polite"></p>
+        <p id="form-status" class="form-status" aria-live="polite">Replace your-email@example.com in the form before going live.</p>
       </form>
     </main>
 
