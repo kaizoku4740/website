@@ -31,8 +31,13 @@ async function parseBody(request) {
 }
 
 function normalizeMessage(parsed, rawText) {
-  // FormSubmit may wrap under form_data, or send flat fields
-  const fd = parsed?.form_data || {};
+  // FormSubmit sends form_data as a JSON *string* — parse it first
+  let fd = {};
+  try {
+    fd = typeof parsed?.form_data === 'string'
+      ? JSON.parse(parsed.form_data)
+      : (parsed?.form_data || {});
+  } catch (_) {}
   const name    = String(fd.name    || parsed?.name    || '').trim();
   const email   = String(fd.email   || parsed?.email   || '').trim();
   const message = String(fd.message || parsed?.message || '').trim();
