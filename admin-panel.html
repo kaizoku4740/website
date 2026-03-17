@@ -10,7 +10,7 @@
   <body>
     <main class="container" style="max-width:900px;margin-top:2rem">
       <h1>Admin Panel</h1>
-      <p style="color:var(--muted)">Manage reviews for all TAs (password required)</p>
+      <p style="color:var(--muted)">Manage reviews and contact messages (password required)</p>
 
       <!-- ===== LOGIN SECTION ===== -->
       <!-- Shown by default - hides after successful login -->
@@ -61,6 +61,12 @@
         <!-- Populated dynamically by JavaScript after login -->
         <!-- Each review has a delete button that requires admin password -->
         <div id="reviews-list" style="display:grid;gap:1rem"></div>
+
+        <div style="margin-top:2rem">
+          <h2 style="margin:0 0 .5rem 0">Contact Messages</h2>
+          <p style="color:var(--muted);margin:.25rem 0 1rem 0">Messages mirrored from the contact form webhook.</p>
+          <div id="contact-messages-list" style="display:grid;gap:1rem"></div>
+        </div>
       </section>
     </main>
 
@@ -82,6 +88,7 @@
       const loginStatus = document.getElementById('login-status');
       const taFilter = document.getElementById('ta-filter');
       const reviewsList = document.getElementById('reviews-list');
+      const contactMessagesList = document.getElementById('contact-messages-list');
 
       let isLoggedIn = false;
       let allReviews = {};
@@ -94,6 +101,7 @@
           loginSection.style.display = 'none';
           dashboardSection.style.display = 'block';
           loadAllReviews();
+          loadContactMessages();
         } else {
           loginStatus.textContent = 'Wrong password. Try again.';
           loginStatus.style.color = '#dc2626';
@@ -107,6 +115,8 @@
         loginStatus.textContent = '';
         loginSection.style.display = 'block';
         dashboardSection.style.display = 'none';
+        reviewsList.innerHTML = '';
+        contactMessagesList.innerHTML = '';
       });
 
       // ===== LOAD ALL REVIEWS =====
@@ -229,6 +239,45 @@
 
       // ===== FILTER CHANGE =====
       taFilter.addEventListener('change', renderReviews);
+
+      // ===== LOAD CONTACT MESSAGES =====
+      async function loadContactMessages() {
+        try {
+          const response = await fetch(`${API_BASE}/api/contact-messages`, {
+            headers: { 'X-Admin-Key': ADMIN_PASSWORD }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed (${response.status})`);
+          }
+
+          const messages = await response.json();
+          renderContactMessages(messages);
+        } catch (e) {
+          console.error('Failed to load contact messages:', e);
+          contactMessagesList.innerHTML = '<p style="color:#dc2626">Failed to load contact messages.</p>';
+        }
+      }
+
+      function renderContactMessages(messages) {
+        if (!messages || messages.length === 0) {
+          contactMessagesList.innerHTML = '<p style="color:var(--muted)">No contact messages yet.</p>';
+          return;
+        }
+
+        contactMessagesList.innerHTML = messages.map(msg => `
+          <div style="background:var(--card);padding:1rem;border-radius:10px;border:1px solid #e6eef6">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+              <div>
+                <strong>${appHelpers.escapeHtml(msg.name || 'Unknown')}</strong>
+                <div style="color:var(--muted);font-size:.9rem">${appHelpers.formatDate(msg.ts)}</div>
+              </div>
+              <a href="mailto:${appHelpers.escapeHtml(msg.email || '')}" style="font-size:.9rem">${appHelpers.escapeHtml(msg.email || 'No email')}</a>
+            </div>
+            <p style="margin:.75rem 0 0 0">${appHelpers.escapeHtml(msg.message || '')}</p>
+          </div>
+        `).join('');
+      }
     </script>
   </body>
 </html>
